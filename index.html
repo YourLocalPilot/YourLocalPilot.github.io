@@ -7,28 +7,9 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="passwordOverlay" class="overlay">
-        <div class="password-container">
-            <img src="https://upload.wikimedia.org/wikipedia/en/3/30/Dnata_logo.svg" alt="Dnata Logo" class="logo">
-            <h1>dAS Bag Reconciliation Scanner</h1>
-            <div class="password-input-container">
-                <input type="password" id="passwordInput" placeholder="Enter password">
-                <button id="peekButton">👁️</button>
-            </div>
-            <button onclick="checkPassword()">Submit</button>
-        </div>
-    </div>
-
-    <div id="mainContent" class="container" style="display:none;">
+    <div class="container">
         <img src="https://upload.wikimedia.org/wikipedia/en/3/30/Dnata_logo.svg" alt="Dnata Logo" class="logo">
-
-<h1>dAS Bag Reconciliation Scanner</h1>
-        
-        <div class="flight-info">
-            <input type="text" id="flightNumber" placeholder="Enter flight number">
-            <input type="text" id="flightDate" placeholder="Enter date (DDMMMYY)">
-        </div>
-
+        <h1>dAS Bag Reconciliation Scanner<h1>
         <div class="collapsible-section">
             <button class="collapsible">Rush</button>
             <div class="content">
@@ -88,16 +69,8 @@
                 </div>
             </div>
         </div>
-
-        <button onclick="generatePDF()">Generate PDF</button>
     </div>
 
     <script src="script.js"></script>
-
-    <footer>
-        <p>Umar Q</p>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 </body>
 </html>
