@@ -298,111 +298,78 @@ const iataCodes = {
     "000": "XH",
     "668": "TR"
 
-};  // Define your IATA codes here
-const processedTags = {
+};
+
+let counters = {
+    Rush: 0,
+    Failed: 0,
+    Interline: 0,
+    Other: 0
+};
+
+let processedTags = {
     Rush: [],
     Failed: [],
     Interline: [],
     Other: []
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    const collapsibleButtons = document.querySelectorAll('.collapsible');
-    collapsibleButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            button.classList.toggle('active');
-            const content = button.nextElementSibling;
-            if (content.style.display === "block") {
-                content.style.display = "none";
-            } else {
-                content.style.display = "block";
+function processTag(category) {
+    const inputTag = document.getElementById(`inputTag${category}`).value;
+    if (inputTag.length !== 10 || isNaN(inputTag)) {
+        alert("Please enter a valid 10-digit bag tag number.");
+        return;
+    }
+
+    const processedTag = transformTag(inputTag);
+    if (processedTag) {
+        if (processedTags[category].includes(processedTag)) {
+            if (!confirm(`The tag "${processedTag}" has already been inputted. Do you want to add it again?`)) {
+                return;
             }
-        });
-    });
-
-    document.getElementById('passwordInput').addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') {
-            checkPassword();
         }
-    });
-
-    document.getElementById('peekButton').addEventListener('mousedown', () => {
-        document.getElementById('passwordInput').type = 'text';
-    });
-
-    document.getElementById('peekButton').addEventListener('mouseup', () => {
-        document.getElementById('passwordInput').type = 'password';
-    });
-
-    document.getElementById('peekButton').addEventListener('mouseleave', () => {
-        document.getElementById('passwordInput').type = 'password';
-    });
-});
-
-function checkPassword() {
-    const password = document.getElementById('passwordInput').value;
-    if (password === 'dnatamhl2024') {
-        document.getElementById('passwordOverlay').style.display = 'none';
-        document.getElementById('mainContent').style.display = 'block';
+        processedTags[category].push(processedTag);
+        displayLastTag(processedTag, category);
+        displayTags(category);
+        updateCounter(category);
+        document.getElementById(`inputTag${category}`).value = '';
     } else {
-        alert('Incorrect password.');
+        alert("IATA code not found.");
     }
 }
 
-function processTag(category) {
-    const inputElement = document.getElementById(`inputTag${category}`);
-    const tag = inputElement.value.trim();
-    if (tag.length !== 10 || isNaN(tag)) {
-        alert('Please enter a valid 10-digit bag tag.');
-        return;
+function transformTag(tag) {
+    const digits = tag.slice(1);
+    const code = digits.slice(0, 3);
+    const rest = digits.slice(3);
+    
+    if (iataCodes[code]) {
+        return `${iataCodes[code]}${rest}`;
+    } else {
+        return null;
     }
+}
 
-    const tagNumber = tag.substring(1);
-    const iataCode = tagNumber.substring(0, 3);
-    const remainingDigits = tagNumber.substring(3);
-
-    const airlineCode = iataCodes[iataCode];
-    if (!airlineCode) {
-        alert('Invalid IATA code.');
-        return;
-    }
-
-    const finalTag = airlineCode + remainingDigits;
-
-    if (processedTags[category].includes(finalTag)) {
-        if (!confirm('Tag already exists. Do you want to add it again?')) {
-            return;
-        }
-    }
-
-    processedTags[category].push(finalTag);
-    inputElement.value = '';
-
-    displayTags(category);
-    updateCounter(category);
-    document.getElementById(`lastTagInput${category}`).textContent = `Last tag inputted: ${finalTag}`;
+function displayLastTag(tag, category) {
+    const lastTagDiv = document.getElementById(`lastTagInput${category}`);
+    lastTagDiv.textContent = `Last tag inputted: ${tag}`;
 }
 
 function displayTags(category) {
-    const container = document.getElementById(`tagsContainer${category}`);
-    container.innerHTML = '';
+    const tagsContainer = document.getElementById(`tagsContainer${category}`);
+    tagsContainer.innerHTML = '';
     processedTags[category].forEach((tag, index) => {
         const tagBox = document.createElement('div');
         tagBox.className = 'tag-box';
-        tagBox.textContent = tag;
-
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-btn';
-        removeBtn.textContent = '✖';
-        removeBtn.onclick = () => {
-            processedTags[category].splice(index, 1);
-            displayTags(category);
-            updateCounter(category);
-        };
-
-        tagBox.appendChild(removeBtn);
-        container.appendChild(tagBox);
+        tagBox.innerHTML = `<span>${tag}</span><button class="remove-btn" onclick="removeTag(${index}, '${category}')">&times;</button>`;
+        tagsContainer.appendChild(tagBox);
     });
+}
+
+function removeTag(index, category) {
+    processedTags[category].splice(index, 1);
+    displayTags(category);
+    updateCounter(category);
 }
 
 function updateCounter(category) {
@@ -434,36 +401,17 @@ function handleKeyPress(event, category) {
     }
 }
 
-function generatePDF() {
-    const flightNumber = document.getElementById('flightNumber').value;
-    const flightDate = new Date(document.getElementById('flightDate').value).toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: '2-digit'
-    }).toUpperCase();
-
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF();
-
-    pdf.addImage('https://content.presspage.com/uploads/2465/1920_dnata-e-brandmark-cmyk-2colourhr-995711.png', 'PNG', 10, 10, 50, 20);
-    pdf.setFontSize(18);
-    pdf.text(`${flightNumber} - ${flightDate}`, 70, 20);
-
-    const sections = ['Rush', 'Failed', 'Interline', 'Other'];
-
-    let yPosition = 40;
-    sections.forEach(section => {
-        pdf.setFontSize(14);
-        pdf.text(section, 10, yPosition);
-        pdf.setFontSize(12);
-        if (processedTags[section].length === 0) {
-            pdf.text('Nil', 20, yPosition + 10);
-        } else {
-            const tagsText = processedTags[section].join(' ');
-            pdf.text(tagsText, 20, yPosition + 10);
-        }
-        yPosition += 20;
+document.addEventListener('DOMContentLoaded', () => {
+    const collapsibleButtons = document.querySelectorAll('.collapsible');
+    collapsibleButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            button.classList.toggle('active');
+            const content = button.nextElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+            } else {
+                content.style.display = "block";
+            }
+        });
     });
-
-    pdf.save(`${flightNumber}_${flightDate}_FLIGHT_REPORT.pdf`);
-}
+});
