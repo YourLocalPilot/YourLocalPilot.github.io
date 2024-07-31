@@ -1,7 +1,7 @@
 {
   "name": "Bag Tag Scanner",
-  "short_name": "BagScanner",
-  "start_url": "bag.html",
+  "short_name": "dAS Bag Scanner",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
