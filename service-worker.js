@@ -1,23 +1,23 @@
-const cacheName = 'bag-tag-scanner-cache-v1';
-const assetsToCache = [
+const cache_Name = 'bag-tag-scanner-cache-v1';
+const urlsToCache = [
   '/',
-  '/bag.html',
+  '/index.html',
   '/styles.css',
   '/script.js',
   '/icon-192x192.png',
   '/icon-512x512.png'
 ];
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(cacheName)
-      .then((cache) => cache.addAll(assetsToCache))
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
   );
 });
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
-      .then((response) => response || fetch(event.request))
+      .then(response => response || fetch(event.request))
   );
 });
